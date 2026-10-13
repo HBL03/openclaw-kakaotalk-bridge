@@ -9,7 +9,7 @@
 AppId={{FD85A107-932C-4BD7-A71B-BBC4A8D7F329}
 AppName=OpenClaw KakaoTalk Local Bridge
 AppVersion={#AppVersion}
-AppPublisher=HBL03
+AppPublisher=Hyeonbeen Lee
 AppPublisherURL=https://github.com/HBL03/openclaw-kakaotalk-bridge
 DefaultDirName={localappdata}\Programs\OpenClawKakaoLocal
 DefaultGroupName=OpenClaw KakaoTalk Local Bridge

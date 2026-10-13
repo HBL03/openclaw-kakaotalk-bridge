@@ -1,8 +1,11 @@
 # openclaw-kakao-channel
 
-Development preview of the `kakao-local` OpenClaw channel, pinned to OpenClaw
-`2026.10.2` and Node 24.19.0. Requires the paired Windows bridge; only `self`
-and `kakao-local:self` are valid targets. The channel is disabled by default.
+The `kakao-local` channel connects OpenClaw to KakaoTalk self-chat through the
+paired Windows bridge. It routes chat commands to the existing agent and returns
+agent replies and scheduled notifications to the same conversation.
+
+The channel targets OpenClaw `2026.10.2` and Node 24.19.0. Only `self` and
+`kakao-local:self` are valid destinations. The channel is disabled by default.
 
 Install the reviewed local tarball with the Windows setup flow documented at
 [HBL03/openclaw-kakaotalk-bridge](https://github.com/HBL03/openclaw-kakaotalk-bridge).
