@@ -28,6 +28,43 @@ async function harness(onInbound: (input: Inbound) => Promise<void> = async () =
   return { journal, server, close: async () => { await server.close(); journal.close(); } };
 }
 
+test("hourly admission budget survives reopening and duplicates do not consume it", () => {
+  const directory = mkdtempSync(join(tmpdir(), "kakao-rate-"));
+  const path = join(directory, "journal.sqlite3");
+  let journal = new Journal(path, 1);
+  try {
+    const now = Date.now();
+    const first = event();
+    assert.equal(journal.admit(first, now), "accepted");
+    journal.inboundState(first.eventId, "completed");
+    assert.equal(journal.admit(first, now), "completed");
+    journal.close();
+    journal = new Journal(path, 1);
+    assert.equal(journal.admit(event("second"), now), "rejected");
+    assert.equal(journal.admit({ ...event("later"), observedAt: now + 3_600_001 }, now + 3_600_001), "accepted");
+  } finally { journal.close(); rmSync(directory, { recursive: true }); }
+});
+
+test("authenticated doctor probe neither claims a peer nor disturbs the current peer", async () => {
+  let calls = 0;
+  const h = await harness(async () => { calls++; });
+  try {
+    for (const connected of [false, true]) {
+      if (connected) await client(h.server);
+      const socket = new WebSocket(`ws://127.0.0.1:${h.server.port}`);
+      await once(socket, "open");
+      const ready = once(socket, "message");
+      const closed = once(socket, "close");
+      socket.send(JSON.stringify({ v: 1, type: "probe", bridgeId: "test-bridge", token }));
+      assert.equal(parseFrame((await ready)[0].toString()).type, "ready");
+      await closed;
+      assert.equal(h.server.connected, connected);
+    }
+    assert.equal(calls, 0);
+    assert.throws(() => parseFrame(JSON.stringify({ v: 1, type: "probe", bridgeId: "test-bridge", token: "invalid" })));
+  } finally { await h.close(); }
+});
+
 test("pairing rejects wrong secret and non-self targets", async () => {
   const h = await harness();
   try {

@@ -39,7 +39,7 @@
           "const": 1
         },
         "type": {
-          "const": "hello"
+          "enum": ["hello", "probe"]
         },
         "bridgeId": {
           "$ref": "#/$defs/id"

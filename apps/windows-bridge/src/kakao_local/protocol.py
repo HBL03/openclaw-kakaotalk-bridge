@@ -48,7 +48,7 @@ def decode(raw: str | bytes) -> dict:
                 raise BridgeError("invalid_delivery_kind")
             if not 0 < message["expiresAt"] - message["createdAt"] <= TTL_MS:
                 raise BridgeError("invalid_expiry")
-    elif kind == "hello":
+    elif kind in ("hello", "probe"):
         identifier(message.get("bridgeId"))
         if not isinstance(message.get("token"), str) or not re.fullmatch(r"[a-f0-9]{64}", message["token"]):
             raise BridgeError("invalid_pairing")

@@ -23,7 +23,9 @@ Example configuration (placeholders, not credentials):
       "port": 29531,
       "secretFile": "/home/openclaw/.openclaw/kakao-local/pairing.secret",
       "stateDir": "/home/openclaw/.openclaw/kakao-local",
-      "bridgeId": "COPY_FROM_WINDOWS_CONFIG"
+      "bridgeId": "COPY_FROM_WINDOWS_CONFIG",
+      "dmHistoryLimit": 12,
+      "maxRequestsPerHour": 60
     }
   }
 }
@@ -31,4 +33,11 @@ Example configuration (placeholders, not credentials):
 
 The secret must contain 64 lowercase hexadecimal characters, have mode `0600`,
 and match the Windows user's DPAPI-protected pairing secret. Never put it in a
-URL or commit it to source control. Gateway restart is explicit after install.
+URL or commit it to source control. The one-command installer restarts the Gateway
+unless `-NoRestart` is supplied; GUI installation requires a manual restart.
+
+History retention uses the SDK's user-turn budget (12 by default, up to 18 before
+batched eviction). The rolling hourly admission limit is persisted across restarts;
+duplicate event IDs do not consume another admission. It applies to incoming chat
+commands, not host Cron jobs. Final replies use a stable session cache key without
+changing model selection or tool permissions. Output-token budgets remain host-owned.

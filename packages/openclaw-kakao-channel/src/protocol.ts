@@ -7,7 +7,7 @@ export type Inbound = { v: 1; type: "inbound.message"; eventId: string; roomId: 
 export type Outbound = { v: 1; type: "outbound.message"; deliveryId: string; roomId: "self";
   createdAt: number; expiresAt: number; kind: "reply" | "notification"; text: string };
 export type Ack = { v: 1; type: "ack"; id: string; status: Status };
-export type Hello = { v: 1; type: "hello"; bridgeId: string; token: string };
+export type Hello = { v: 1; type: "hello" | "probe"; bridgeId: string; token: string };
 export type Frame = Inbound | Outbound | Ack | Hello | { v: 1; type: "ready" } |
   { v: 1; type: "cancel.delivery"; id: string };
 const statuses = new Set<Status>(["accepted", "processing", "completed", "queued", "sending", "confirmed",
@@ -44,6 +44,7 @@ export function parseFrame(raw: string): Frame {
       break;
     }
     case "hello":
+    case "probe":
       identifier(frame.bridgeId);
       if (typeof frame.token !== "string" || !/^[a-f0-9]{64}$/.test(frame.token)) throw new Error("invalid_pairing");
       break;

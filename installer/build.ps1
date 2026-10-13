@@ -57,7 +57,7 @@ try {
     [IO.File]::WriteAllText("$packagePath.sha256", "$hash  $([IO.Path]::GetFileName($packagePath))`n", [Text.UTF8Encoding]::new($false))
     Invoke-Checked $PythonPath @("-m", "PyInstaller", "--noconfirm", "--clean", "--windowed", "--onedir", "--name", "OpenClawKakaoLocal", "--distpath", $distPath, "--workpath", "build/pyinstaller", "--specpath", "build", "--paths", "apps/windows-bridge/src", "apps/windows-bridge/launcher.py")
     $appPath = Join-Path $distPath "OpenClawKakaoLocal"
-    Copy-Item -LiteralPath "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "SECURITY.md" -Destination $appPath
+    Copy-Item -LiteralPath "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "SECURITY.md", "install.ps1", "INSTALL_AGENT.md" -Destination $appPath
     Copy-Item -LiteralPath "docs", "contracts", "release" -Destination $appPath -Recurse -Force
     Copy-Item -LiteralPath "OpenClaw_KakaoTalk_Local_Bridge_Implementation_Plan.md" -Destination $appPath
     Copy-Item -LiteralPath $packagePath, "$packagePath.sha256" -Destination $appPath

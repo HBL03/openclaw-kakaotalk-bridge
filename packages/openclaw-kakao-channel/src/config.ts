@@ -3,16 +3,24 @@ import { isAbsolute } from "node:path";
 import type { OpenClawConfig } from "openclaw/plugin-sdk/channel-core";
 
 export type Account = { accountId: "default"; enabled: boolean; port: number; secretFile: string;
-  stateDir: string; bridgeId: string };
+  stateDir: string; bridgeId: string; dmHistoryLimit: number; maxRequestsPerHour: number };
 export const schema = { type: "object", additionalProperties: false, properties: {
   enabled: { type: "boolean", default: false },
   port: { type: "integer", minimum: 1024, maximum: 65535, default: 29531 },
   secretFile: { type: "string" }, stateDir: { type: "string" }, bridgeId: { type: "string" },
+  dmHistoryLimit: { type: "integer", minimum: 1, maximum: 100, default: 12 },
+  maxRequestsPerHour: { type: "integer", minimum: 1, maximum: 600, default: 60 },
 } };
 export function resolveAccount(cfg: OpenClawConfig, id?: string | null): Account {
   if (id && id !== "default") throw new Error("unsupported_account");
   const raw = cfg.channels?.["kakao-local"] as Partial<Account> | undefined;
+  const dmHistoryLimit = raw?.dmHistoryLimit ?? 12;
+  const maxRequestsPerHour = raw?.maxRequestsPerHour ?? 60;
+  if (!Number.isInteger(dmHistoryLimit) || dmHistoryLimit < 1 || dmHistoryLimit > 100 ||
+      !Number.isInteger(maxRequestsPerHour) || maxRequestsPerHour < 1 || maxRequestsPerHour > 600)
+    throw new Error("invalid_usage_limits");
   return { accountId: "default", enabled: raw?.enabled === true, port: raw?.port ?? 29531,
+    dmHistoryLimit, maxRequestsPerHour,
     secretFile: raw?.secretFile ?? "", stateDir: raw?.stateDir ?? "", bridgeId: raw?.bridgeId ?? "" };
 }
 export function loadToken(account: Account): string {

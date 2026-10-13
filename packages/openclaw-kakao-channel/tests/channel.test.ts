@@ -29,6 +29,8 @@ test("SDK entry loads with a self-only channel and preserves configured agent ro
   assert.equal(ctx.BodyForAgent, "10분 뒤 알려줘");
   assert.equal(ctx.CommandAuthorized, true);
   assert.deepEqual((calls[0]!.delivery as { durable: object }).durable, { to: "self", replyToId: "event" });
+  assert.equal((calls[0]!.cfg as any).channels["kakao-local"].dmHistoryLimit, 12);
+  assert.equal((calls[0]!.replyOptions as any).promptCacheKey, sessionKey("existing-agent"));
 });
 
 test("outbound calls without durable custody fail before sending", async () => {
@@ -38,6 +40,8 @@ test("outbound calls without durable custody fail before sending", async () => {
 
 test("one account only; channel disabled unless explicitly enabled", () => {
   assert.equal(resolveAccount({}).enabled, false);
+  assert.equal(resolveAccount({}).maxRequestsPerHour, 60);
+  assert.throws(() => resolveAccount({ channels: { "kakao-local": { dmHistoryLimit: 0 } } }), /invalid_usage_limits/);
   assert.throws(() => resolveAccount({}, "another"), /unsupported_account/);
   assert.equal(channel.messaging!.normalizeTarget!("kakao-local:self"), "self");
   assert.equal(channel.messaging!.normalizeTarget!("group"), undefined);

@@ -33,6 +33,10 @@ async function send(ctx: ChannelMessageSendTextContext): Promise<ChannelMessageS
 }
 
 export async function dispatchInbound(cfg: OpenClawConfig, event: Inbound): Promise<void> {
+  const account = resolveAccount(cfg);
+  cfg = { ...cfg, channels: { ...cfg.channels, "kakao-local": {
+    ...cfg.channels?.["kakao-local"], dmHistoryLimit: account.dmHistoryLimit,
+  } } };
   const route = runtime.channel.routing.resolveAgentRoute({ cfg, channel: "kakao-local", accountId: "default",
     peer: { kind: "direct", id: "self" } });
   const key = sessionKey(route.agentId);
@@ -50,7 +54,8 @@ export async function dispatchInbound(cfg: OpenClawConfig, event: Inbound): Prom
   await runtime.channel.inbound.dispatch({
     cfg, channel: "kakao-local", accountId: "default", route: { agentId: route.agentId, sessionKey: key },
     ctxPayload, messageId: event.eventId,
-    replyOptions: { disableBlockStreaming: true },
+    replyOptions: { disableBlockStreaming: true, promptCacheKey: key,
+      suppressDefaultToolProgressMessages: true, suppressToolProgressMessages: true },
     delivery: {
       durable: { to: "self", replyToId: event.eventId },
       preparePayload: (payload, info) => info.kind === "final" ? payload : null,
@@ -100,7 +105,7 @@ export const channel = createChatChannelPlugin<Account>({
     gateway: {
       startAccount: async ctx => {
         const token = loadToken(ctx.account);
-        const journal = new Journal(join(ctx.account.stateDir, "transport.sqlite3"));
+        const journal = new Journal(join(ctx.account.stateDir, "transport.sqlite3"), ctx.account.maxRequestsPerHour);
         const owned = new BridgeTransport({ port: ctx.account.port, token,
           bridgeId: ctx.account.bridgeId, journal, onInbound: event => dispatchInbound(ctx.cfg, event),
           onStatus: connected => ctx.setStatus({ accountId: "default", running: true, connected }) });

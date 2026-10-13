@@ -8,7 +8,9 @@ type Row = { id: string; digest: string; payload: string | null; state: Status; 
 /** A transport journal, not a second worker that retries OpenClaw agent turns. */
 export class Journal {
   readonly db: DatabaseSync;
-  constructor(readonly path: string) {
+  constructor(readonly path: string, readonly maxRequestsPerHour = 60) {
+    if (!Number.isInteger(maxRequestsPerHour) || maxRequestsPerHour < 1 || maxRequestsPerHour > 600)
+      throw new Error("invalid_usage_limits");
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
     this.db = new DatabaseSync(path);
     this.db.exec(`PRAGMA journal_mode=DELETE; PRAGMA secure_delete=ON; PRAGMA synchronous=FULL;
@@ -30,9 +32,12 @@ export class Journal {
       return old.state;
     }
     const count = this.db.prepare("SELECT count(*) AS n FROM inbound WHERE state='accepted'").get() as { n: number };
-    const state = event.observedAt > now + 60_000 || event.observedAt + TTL_MS <= now ? "expired" : count.n >= 5 ? "rejected" : "accepted";
+    const recent = this.db.prepare("SELECT count(*) AS n FROM inbound WHERE created>? AND state NOT IN ('rejected','expired')")
+      .get(now - 3_600_000) as { n: number };
+    const state = event.observedAt > now + 60_000 || event.observedAt + TTL_MS <= now ? "expired" :
+      count.n >= 5 || recent.n >= this.maxRequestsPerHour ? "rejected" : "accepted";
     this.db.prepare("INSERT INTO inbound VALUES(?,?,?,?,?)").run(event.eventId, digest,
-      state === "accepted" ? JSON.stringify(event) : null, state, event.observedAt);
+      state === "accepted" ? JSON.stringify(event) : null, state, now);
     return state;
   }
   next(): Inbound | undefined {
@@ -67,7 +72,7 @@ export class Journal {
   }
   prune(now = Date.now()): void {
     this.db.prepare("UPDATE outbound SET state=CASE WHEN state='sending' THEN 'unknown' ELSE 'expired' END,payload=NULL WHERE expires<=? AND state IN ('queued','sending')").run(now);
-    this.db.prepare("UPDATE inbound SET state='expired',payload=NULL WHERE state='accepted' AND created<=?").run(now - TTL_MS);
+    this.db.prepare("UPDATE inbound SET state='expired',payload=NULL WHERE state='accepted' AND json_extract(payload,'$.observedAt')<=?").run(now - TTL_MS);
     const cutoff = now - 7 * 86_400_000;
     this.db.prepare("DELETE FROM inbound WHERE created<? AND state NOT IN ('accepted','processing')").run(cutoff);
     this.db.prepare("DELETE FROM outbound WHERE created<? AND state NOT IN ('queued','sending')").run(cutoff);

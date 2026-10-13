@@ -34,13 +34,21 @@ export class BridgeTransport {
       const timeout = setTimeout(() => socket.close(1008), 3000);
       socket.on("error", () => socket.close());
       socket.on("message", raw => {
+        if (socket.readyState !== WebSocket.OPEN) return;
         try {
           const frame = parseFrame(raw.toString());
           if (!authenticated) {
-            if (frame.type !== "hello" || frame.bridgeId !== this.options.bridgeId ||
-                !timingSafeEqual(Buffer.from(frame.token), Buffer.from(this.options.token)) || this.connected) {
+            if ((frame.type !== "hello" && frame.type !== "probe") || frame.bridgeId !== this.options.bridgeId ||
+                !timingSafeEqual(Buffer.from(frame.token), Buffer.from(this.options.token))) {
               socket.close(1008, "pairing_rejected"); return;
             }
+            if (frame.type === "probe") {
+              clearTimeout(timeout);
+              socket.send(JSON.stringify({ v: 1, type: "ready" }));
+              socket.close(1000);
+              return;
+            }
+            if (this.connected) { socket.close(1008, "peer_already_connected"); return; }
             authenticated = true;
             clearTimeout(timeout);
             this.peer = socket;

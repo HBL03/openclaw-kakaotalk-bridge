@@ -55,7 +55,9 @@ def save_secret(directory: Path, token: str | None = None) -> str:
     if len(token) != 64 or any(c not in "0123456789abcdef" for c in token):
         raise BridgeError("invalid_pairing_secret")
     ciphertext = win32crypt.CryptProtectData(token.encode(), "kakao-local", None, None, None, 0)
-    (directory / "pairing.dpapi").write_bytes(ciphertext)
+    temp = directory / "pairing.dpapi.tmp"
+    temp.write_bytes(ciphertext)
+    temp.replace(directory / "pairing.dpapi")
     return token
 
 

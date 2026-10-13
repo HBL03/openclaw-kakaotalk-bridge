@@ -192,8 +192,8 @@ class BridgeWindow(QMainWindow):
         bridge_id = self.config.bridge_id
 
         def perform_install():
-            install_channel(archive, expected, token, bridge_id, distro, port)
             save_secret(self.directory, token)
+            install_channel(archive, expected, token, bridge_id, distro, port)
 
         self.install_task = InstallTask(perform_install)
         self.install_task.done.connect(self.state.setText)

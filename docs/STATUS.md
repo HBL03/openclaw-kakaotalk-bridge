@@ -10,15 +10,20 @@
 | OpenClaw `2026.10.2` SDK 등록·입력 라우팅 | 타입 검사, SDK 로드 + 모의 runtime 테스트 |
 | PySide6 설정·트레이·P0 echo·DPAPI·설치 보조 | 구현, 실제 카카오톡과 분리해 검증 |
 | Windows portable/설치 패키징·CI·출시 게이트 | 구현; 공개 서명 배포 전 |
+| 한 명령 설치·재설치·JSON 상태 확인 | 구현, 로컬 전제 조건 검사 및 격리된 설치 로직 테스트 |
+| 대화 이력·시간당 명령 제한·세션 캐시 키 | 구현, SDK 타입 및 모의 runtime·영속화 테스트 |
 | 실제 카카오톡 P0 20회 / 명령 100회 | **미실행** |
 | 기존 Gateway에서 모델 응답·Cron·재시작 E2E | **미실행** |
 | 서명·새 Windows 사용자 설치·업데이트·제거 | **미검증** |
 
-로컬 Windows 자동 검증: Python **54개**, TypeScript **14개** 통과, Ruff 및 TypeScript
+로컬 Windows 자동 검증: Python **58개**, TypeScript **16개** 통과, Ruff 및 TypeScript
 타입 검사 통과. Python 테스트에는 실제 로컬 WebSocket으로 두 언어를 연결하는 통합 테스트가
 포함됩니다. TypeScript 테스트에는 SDK 계정 lifecycle과 응답/알림 어댑터의 모의 전송이 포함됩니다.
 PyInstaller portable ZIP과 Inno Setup 6.7.3 설치 EXE를 빌드했고, 빌드된 EXE의 합성 echo 및
 설정 화면의 오프스크린 한글 렌더링도 확인했습니다. 서명·실제 설치·카카오톡 E2E 검증과는 별개입니다.
+한 명령 설치의 로컬 전제 조건 검사를 실행했고, 소스·빌드된 EXE의 진단 명령을 격리된 데이터
+디렉터리에서 확인했습니다. WSL 설치 로직은 모의 CLI로 재설치와 설정 보존을 검증했으며,
+실제 Gateway에 대한 자동 설치·재시작 검증은 아직 수행하지 않았습니다.
 
 현재 개발 장비의 버전 참고: Windows build `26200.9457`, KakaoTalk `26.8.2.5324`,
 OpenClaw `2026.10.2`, Node `24.19.0`. 버전 조회는 실제 메시지 읽기/쓰기 검증을 뜻하지 않습니다.
