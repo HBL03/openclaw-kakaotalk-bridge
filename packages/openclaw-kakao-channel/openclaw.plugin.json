@@ -1,0 +1,12 @@
+{
+  "id": "kakao-local",
+  "name": "KakaoTalk Local",
+  "version": "0.1.0-dev.1",
+  "description": "Single-user, loopback-only KakaoTalk self-chat channel",
+  "channels": ["kakao-local"],
+  "configSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  }
+}

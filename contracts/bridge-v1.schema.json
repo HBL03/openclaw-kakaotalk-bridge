@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HBL03/openclaw-kakaotalk-bridge/contracts/bridge-v1.schema.json",
+  "title": "Kakao Local Bridge v1",
+  "description": "UTF-8 frame <=65536 bytes. Timestamps are epoch milliseconds. Runtime additionally enforces 0 < expiresAt-createdAt <=900000. Unknown fields are ignored.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:/-]{1,160}$"
+    },
+    "time": {
+      "type": "number",
+      "minimum": 0
+    },
+    "inText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "pattern": "^(?![\\s\\S]*\\u0000)[\\s\\S]*\\S[\\s\\S]*$"
+    },
+    "outText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 16000,
+      "pattern": "^(?![\\s\\S]*\\u0000)[\\s\\S]*\\S[\\s\\S]*$"
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "v",
+        "type",
+        "bridgeId",
+        "token"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "type": {
+          "const": "hello"
+        },
+        "bridgeId": {
+          "$ref": "#/$defs/id"
+        },
+        "token": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "v",
+        "type"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "type": {
+          "const": "ready"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "v",
+        "type",
+        "eventId",
+        "roomId",
+        "observedAt",
+        "text"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "type": {
+          "const": "inbound.message"
+        },
+        "eventId": {
+          "$ref": "#/$defs/id"
+        },
+        "roomId": {
+          "const": "self"
+        },
+        "observedAt": {
+          "$ref": "#/$defs/time"
+        },
+        "text": {
+          "$ref": "#/$defs/inText"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "v",
+        "type",
+        "deliveryId",
+        "roomId",
+        "createdAt",
+        "expiresAt",
+        "kind",
+        "text"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "type": {
+          "const": "outbound.message"
+        },
+        "deliveryId": {
+          "$ref": "#/$defs/id"
+        },
+        "roomId": {
+          "const": "self"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/time"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/time"
+        },
+        "kind": {
+          "enum": [
+            "reply",
+            "notification"
+          ]
+        },
+        "text": {
+          "$ref": "#/$defs/outText"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "v",
+        "type",
+        "id",
+        "status"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "type": {
+          "const": "ack"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "processing",
+            "completed",
+            "queued",
+            "sending",
+            "confirmed",
+            "unknown",
+            "failed",
+            "expired",
+            "rejected"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "v",
+        "type",
+        "id"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "type": {
+          "const": "cancel.delivery"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    }
+  ]
+}

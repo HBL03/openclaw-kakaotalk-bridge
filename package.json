@@ -1,0 +1,13 @@
+{
+  "name": "openclaw-kakaotalk-bridge",
+  "private": true,
+  "version": "0.1.0-dev.1",
+  "type": "module",
+  "workspaces": ["packages/openclaw-kakao-channel"],
+  "engines": {"node": ">=24.16.0 <25"},
+  "scripts": {
+    "build": "npm run build --workspace packages/openclaw-kakao-channel",
+    "typecheck": "npm run typecheck --workspace packages/openclaw-kakao-channel",
+    "test": "npm run test --workspace packages/openclaw-kakao-channel"
+  }
+}

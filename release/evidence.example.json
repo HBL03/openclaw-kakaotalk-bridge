@@ -1,0 +1,32 @@
+{
+  "sourceCommit": "REPLACE_WITH_TESTED_40_CHARACTER_COMMIT",
+  "version": "0.1.0-dev.1",
+  "checkedAt": null,
+  "environment": {"windowsBuild": "", "kakaoVersion": "", "openclawVersion": "2026.10.2", "tester": ""},
+  "results": {
+    "p0EchoCount": 0,
+    "commandCount": 0,
+    "duplicateSends": null,
+    "wrongRoomSends": null,
+    "selfRoomGuard": false,
+    "crashRecovery": false,
+    "clipboardRestored": false,
+    "focusGuard": false,
+    "lockGuard": false,
+    "resumeBaseline": false,
+    "minimizedWindow": false,
+    "agentRoundtrip": false,
+    "sessionContinuity": false,
+    "cronAnnounce": false,
+    "sdkReceiptSemantics": false,
+    "offlineTtl": false,
+    "wslLoopback": false,
+    "gatewayRestart": false,
+    "longReply": false,
+    "cleanInstall": false,
+    "upgrade": false,
+    "uninstall": false,
+    "existingConfigPreserved": false
+  },
+  "lgplSourceAndNoticesReviewed": false
+}

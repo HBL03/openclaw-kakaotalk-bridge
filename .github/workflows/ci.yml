@@ -1,0 +1,58 @@
+name: verify
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e "apps/windows-bridge[dev]"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: python -m ruff check apps/windows-bridge/src tests scripts
+      - run: python -m pytest tests -q
+        env:
+          QT_QPA_PLATFORM: offscreen
+  developer-build:
+    needs: test
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m venv .venv
+      - run: .\.venv\Scripts\python.exe -m pip install -e "apps/windows-bridge[dev]"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: .\installer\build.ps1 -PortableOnly
+        shell: pwsh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-developer-preview
+          path: |
+            dist/*.zip
+            dist/*.tgz
+            dist/*.sha256
+            dist/SHA256SUMS.txt
+          retention-days: 7
